@@ -8,11 +8,7 @@ output:
 ---
 
 
-```{r setup, include = FALSE}
 
-knitr::opts_chunk$set(echo = TRUE)
-
-```
 
 
 ## Introduction
@@ -41,8 +37,8 @@ The instructions say:
 2. Process/transform the data (if necessary) into a format suitable for your
 analysis
 
-```{r data.prep, message = FALSE}
 
+```r
 library(dplyr)
 library(lattice)
 
@@ -64,7 +60,6 @@ rm(file.name)
 # Read in data
 data <- read.csv("activity.csv", colClasses = c("integer", "Date", "integer"))
 # 17568 obs of 3 variables
-
 ```
 
 The data frame called `data` will be manipulated in each of the subsections
@@ -82,8 +77,8 @@ dataset.
 1. Make a histogram of the total number of steps taken each day
 2. Calculate and report the mean and median total number of steps taken per day
 
-```{r part.1}
 
+```r
 # Prepare a table to create the histogram from
 table.1 <- as_tibble(data) %>%  # 17568 obs of 3 variables
              group_by(date) %>%
@@ -93,15 +88,18 @@ table.1 <- as_tibble(data) %>%  # 17568 obs of 3 variables
 # Create a histogram of the total number of steps taken each day
 hist(table.1$total.steps, main = "Histogram of Steps Taken in a Day",
      xlab = "Total Number of Steps Taken in a Day")
+```
 
+![](PA1_template_files/figure-html/part.1-1.png)<!-- -->
+
+```r
 # Calculate the mean and median total number of steps taken per day
 mean.1 <- round(mean(table.1$total.steps), digits = 1)  # 10766.2
 median.1 <- median(table.1$total.steps)  # 10765L
-
 ```
 
 The histogram is shown above. For the total number of steps taken per day, the
-mean is `r format(mean.1, scientific = FALSE)` and the median is `r median.1`.
+mean is 10766.2 and the median is 10765.
 
 
 ## What is the average daily activity pattern?
@@ -114,8 +112,8 @@ The instructions say:
 2. Which 5-minute interval, on average across all the days in the dataset,
 contains the maximum number of steps?
 
-```{r part.2}
 
+```r
 # Prepare a table to create the histogram from
 table.2 <- as_tibble(data) %>%
              group_by(interval) %>%
@@ -125,7 +123,11 @@ table.2 <- as_tibble(data) %>%
 plot(table.2$interval, table.2$mean.steps, type = "l",
      main = "Average Number of Steps Taken by Interval",
      xlab = "5 Minute Interval", ylab = "Average Number of Steps")
+```
 
+![](PA1_template_files/figure-html/part.2-1.png)<!-- -->
+
+```r
 # Determine which 5-minute interval on average has the most steps
 table.2a <- table.2 %>%
               filter(mean.steps == max(mean.steps)) %>%  # 1 obs of 2 variables
@@ -133,11 +135,10 @@ table.2a <- table.2 %>%
 
 max.interval.2 <- table.2a[[1]]  # 835L
 rm(table.2a)
-
 ```
 
 The line plot is shown above. On average across all days, the 5-minute interval
-that contains the maximum number of steps is `r max.interval.2`, which
+that contains the maximum number of steps is 835, which
 represents 8:35 AM.
 
 
@@ -162,8 +163,8 @@ values differ from the estimates from the first part of the assignment? What is
 the impact of imputing missing data on the estimates of the total daily number
 of steps?
 
-```{r part.3a}
 
+```r
 # Calculate how many rows have missing values in the dataset
 na.count.3 <- sum(is.na(data$steps))  # 2304L
 
@@ -174,11 +175,27 @@ table.3 <- as_tibble(data) %>%
              summarize(na.count = sum(is.na(steps))) %>%  # 61 obs of 2 vars
              arrange(desc(na.count)) %>%
              print()
-
 ```
 
-The total number of missing values in the dataset is `r na.count.3`. By looking
-at the table created above one can see that all `r na.count.3` `NA` values are
+```
+## # A tibble: 61 x 2
+##    date       na.count
+##    <date>        <int>
+##  1 2012-10-01      288
+##  2 2012-10-08      288
+##  3 2012-11-01      288
+##  4 2012-11-04      288
+##  5 2012-11-09      288
+##  6 2012-11-10      288
+##  7 2012-11-14      288
+##  8 2012-11-30      288
+##  9 2012-10-02        0
+## 10 2012-10-03        0
+## # ... with 51 more rows
+```
+
+The total number of missing values in the dataset is 2304. By looking
+at the table created above one can see that all 2304 `NA` values are
 accounted for in just 8 days where all 288 observations are missing. One
 explanation is that the device was not functioning during these days. In this
 case the missing values could be imputed by using the average steps per interval
@@ -187,8 +204,8 @@ in `table.2`, but the values should be rounded so that all values for `steps`
 are integers. These rounded values will be used to impute the missing data in
 this exercise.
 
-```{r part.3b}
 
+```r
 # Fill in the missing data
 # Modify table.2 to create an "average day"
 table.2b <- table.2 %>%
@@ -219,17 +236,20 @@ table.3c <- data.imputed %>%
 # Create histogram of the total number of steps taken each day
 hist(table.3c$total.steps, main = "Histogram of Steps Taken in a Day (imputed)",
      xlab = "Total Number of Steps Taken in a Day")
+```
 
+![](PA1_template_files/figure-html/part.3b-1.png)<!-- -->
+
+```r
 # Calculate the mean and median total number of steps taken per day
 mean.3 <- round(mean(table.3c$total.steps), digits = 1)  # 10765.6
 median.3 <- median(table.3c$total.steps)  # 10762L
-
 ```
 
 The `data.imputed` dataset was created, and it is equal to the original dataset
 with the missing data filled in. The histogram showing the total number of steps
 taken per day for the imputed data is shown above. The mean is
-`r format(mean.3, scientific = FALSE)` and the median is `r median.3`. These
+10765.6 and the median is 10762. These
 values are slightly different from those calculated in part 1, but this is due
 to how the number of steps were rounded to integer values in `table.2b`. The
 main impact of imputing the missing data is on the probability distribution of
@@ -249,8 +269,8 @@ dataset with the filled-in missing values for this part.
 5-minute interval (x-axis) and the average number of steps taken, averaged
 across all weekday days or weekend days (y-axis).
 
-```{r part.4}
 
+```r
 # Create a new factor variable for the type of day (weekday or weekend)
 table.4 <- as_tibble(data.imputed) %>%  # 17568 obs of 3 variables
              mutate(weekday = weekdays(date)) %>%  # 17568 obs of 4 variables
@@ -266,8 +286,9 @@ print(xyplot(mean.steps ~ interval | day.type, data = table.4, type = "l",
              main = "Average Number of Steps Taken by Interval and Day Type",
              xlab = "5 Minute Interval", ylab = "Average Number of Steps",
              layout = c(1, 2)))
-
 ```
+
+![](PA1_template_files/figure-html/part.4-1.png)<!-- -->
 
 The factor variable for the type of day was added to the imputed data in
 `table.4` which was later summarized by interval and day type to create the
